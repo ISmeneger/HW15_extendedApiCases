@@ -5,6 +5,7 @@ import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import models.SuperheroModel;
 
@@ -28,10 +29,23 @@ public class FluentSuperheroController {
         return new HttpResponse(given(this.requestSpecification).post("superheroes").then());
     }
 
-    @Step("Update superhero by id")
-    public HttpResponse updateSuperhero(SuperheroModel superhero, Integer id) {
+    @Step("Update superhero by id with retry")
+    public HttpResponse updateSuperhero(SuperheroModel superhero, Integer id) throws InterruptedException {
         this.requestSpecification.body(superhero);
-        return new HttpResponse(given(this.requestSpecification).put("superheroes/" + id).then());
+        Response response = given(this.requestSpecification).put("superheroes/" + id);
+        int statusCode = response.getStatusCode();
+        if (statusCode != 200) {
+            for (int i = 0; i < 10; i++) {
+                System.out.println("Waiting total " + (i + 1) + " second");
+                Thread.sleep(1000);
+                response = given(this.requestSpecification).put("superheroes/" + id);
+                statusCode = response.getStatusCode();
+                if (statusCode == 200) {
+                    break;
+                }
+            }
+        }
+        return new HttpResponse(response.then());
     }
 
     @Step("Get all superheroes")
@@ -39,13 +53,32 @@ public class FluentSuperheroController {
         return new HttpResponse(given(this.requestSpecification).get("superheroes").then());
     }
 
-    @Step("Get superheroe by id")
-    public HttpResponse getSuperheroesById(Integer id) {
+    @Step("Get superhero by id")
+    public HttpResponse getSuperheroesById(Integer id){
         return new HttpResponse(given(this.requestSpecification).get("superheroes/" + id).then());
     }
 
+    @Step("Get superhero by id with retry")
+    public HttpResponse getSuperheroesByIdWithRetry(Integer id) throws InterruptedException {
+        Response response = given(this.requestSpecification).get("superheroes/" + id);
+        int statusCode = response.getStatusCode();
+        if (statusCode != 200) {
+            for (int i = 0; i < 10; i++) {
+                System.out.println("Waiting total " + (i + 1) + " second");
+                Thread.sleep(1000);
+                response = given(this.requestSpecification).get("superheroes/" + id);
+                statusCode = response.getStatusCode();
+                if (statusCode == 200) {
+                    break;
+                }
+            }
+        }
+        return new HttpResponse(response.then());
+    }
+
     @Step("Delete superhero by id")
-    public HttpResponse deleteSuperheroById(Integer id) {
+    public HttpResponse deleteSuperheroById (Integer id){
         return new HttpResponse(given(this.requestSpecification).delete(String.format("superheroes/" + id)).then());
     }
 }
+
