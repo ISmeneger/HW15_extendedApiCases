@@ -28,7 +28,7 @@ public class SuperheroTestData {
     public static final SuperheroModel UPDATE_SUPERHERO = SuperheroModel.builder()
             .birthDate("1991-05-26")
             .city("Belgrade")
-            .fullName("AlexanderVictorov")
+            .fullName("Alexander Victorov")
             .gender(Gender.M)
             .id(257)
             .mainSkill("Manager")
